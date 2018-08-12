@@ -64,3 +64,9 @@
         text-overflow: ellipsis;
     }
 }
+
+.popupbox-content {
+    overflow: auto !important;
+    max-height: 400px;
+    width:800px;
+}

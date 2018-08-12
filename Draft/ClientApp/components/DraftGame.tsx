@@ -1,8 +1,13 @@
 ﻿import * as React from 'react';
-import { RouteComponentProps } from 'react-router';
+import { RouteComponentProps, Route } from 'react-router';
 import Dropdown from 'react-dropdown';
-//import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import 'react-dropdown/style.css'
+//import Popup from 'react-popup';
+import {
+    PopupboxManager,
+    PopupboxContainer
+} from 'react-popupbox';
+import 'react-popupbox/dist/react-popupbox.css';
+import 'react-dropdown/style.css';
 //import ReactDOM from 'react-dom';
 
 
@@ -14,7 +19,9 @@ interface DraftState {
 	draftnumber: number;
 	teams: TeamState[];
 	selectedPlayers: string[];
-	selectplayer:string;
+    selectplayer: string;
+    trades: string[];
+    keepers: string[];
 }
 
 interface Player {
@@ -102,7 +109,11 @@ class Draft extends React.Component<any, DraftState> {
 		this.handleChange = this.handleChange.bind(this);
 		this.handleSubmit = this.handleSubmit.bind(this);
 		this.handleChangePlayer = this.handleChangePlayer.bind(this);
-		this.handleSubmitPlayer = this.handleSubmitPlayer.bind(this);
+        this.handleSubmitPlayer = this.handleSubmitPlayer.bind(this);
+        this.openPopupbox = this.openPopupbox.bind(this);
+        this.updatetrade = this.updatetrade.bind(this);
+        this.updatekeeper = this.updatekeeper.bind(this);
+        this.savetrade = this.savetrade.bind(this);
 		this.state = {
 			Rounds: allrounds,
 			CurrentRound: 1,
@@ -111,7 +122,9 @@ class Draft extends React.Component<any, DraftState> {
 			draftnumber: 0,
 			teams: teamstemp,
 			selectedPlayers: [],
-			selectplayer:''
+            selectplayer: '',
+            trades: [],
+            keepers:[]
 
 		};
 
@@ -206,7 +219,10 @@ class Draft extends React.Component<any, DraftState> {
     }
 
 
-	selectTeam(teamnumber: number, currentRound:number) {
+    selectTeam(teamnumber: number, currentRound: number) {
+        if (teamnumber == 0) {
+            return;
+        }
 		console.log('vilket lag'+teamnumber);
         const teams = this.state.teams.slice();
         let minrulesfullfilled = teams[teamnumber - 1].MinRulesFullfilled;
@@ -387,8 +403,8 @@ class Draft extends React.Component<any, DraftState> {
 			let numbernotin = 0;
 			for (let i = 0; i < teams.length; i++) {
 				let teamHasPlayer = false;
-				for (let y = 0; y < teams[i].SelectedPlayers.length; y++) {
-					if (teams[i].SelectedPlayers[y].name === selectedplayer.name) {
+                for (let y = 0; y < teams[i].SelectedPlayers.length; y++) {
+                    if (teams[i].SelectedPlayers[y].name === selectedplayer.name && teams[i].SelectedPlayers[y].position === selectedplayer.position && teams[i].SelectedPlayers[y].team === selectedplayer.team) {
 					//	console.log(selectedplayer.name + ' redan vald');
 						teamHasPlayer = true;
 						continue;
@@ -485,19 +501,21 @@ class Draft extends React.Component<any, DraftState> {
 
 		}
 
-		console.log('vald spelare' + selectedplayer.name);
-		let ranking = teams[this.state.draftnumber - 1].Ranking.slice();
+        console.log('vald spelare' + selectedplayer.name);
+        if (this.state.draftnumber > 0) {
+            let ranking = teams[this.state.draftnumber - 1].Ranking.slice();
 
-		let count = 0;
-		while (true) {
-			if (teams[this.state.draftnumber - 1].Ranking[count].name === selectedplayer.name) {
-				break;
-			} else {
-				count++;
-			}
-		}
-		ranking.splice(count, 1);
-		teams[this.state.draftnumber - 1].Ranking = ranking;
+            let count = 0;
+            while (true) {
+                if (teams[this.state.draftnumber - 1].Ranking[count].name === selectedplayer.name && teams[this.state.draftnumber - 1].Ranking[count].position === selectedplayer.position && teams[this.state.draftnumber - 1].Ranking[count].team === selectedplayer.team) {
+                    break;
+                } else {
+                    count++;
+                }
+            }
+            ranking.splice(count, 1);
+            teams[this.state.draftnumber - 1].Ranking = ranking;
+        }
 
 		teams[teamnumber - 1].SelectedPlayers= teams[teamnumber - 1].SelectedPlayers.concat(selectedplayer);
 		this.setState({
@@ -662,13 +680,159 @@ class Draft extends React.Component<any, DraftState> {
 		}
 		return table;
 	}
-	
+
+    openPopupbox() {
+
+        let children = [];
+        let content = [];
+        const options = [
+            { value: 'one', label: 'One' },
+            { value: 'two', label: 'Two' },
+            {
+                type: 'group', name: 'group1', items: [
+                    { value: 'three', label: 'Three' },
+                    { value: 'four', label: 'Four' }
+                ]
+            },
+            {
+                type: 'group', name: 'group2', items: [
+                    { value: 'five', label: 'Five' },
+                    { value: 'six', label: 'Six' }
+                ]
+            }
+        ]
+        for (let i = 0; i < this.state.Rounds.length; i++) {
+                children.push(<div key={'runda' + i.toString()}>Runda {i + 1}</div>)
+            for (let y = 0; y < this.state.Rounds[i].length; y++) {
+                const options = this.state.teams[this.state.draftnumber - 1] != null ? this.state.teams[this.state.draftnumber - 1].Ranking.map((r) => { return { label: (r.name + ' ' + r.position + ' ' + r.team), value: (r.name + ' ' + r.position + ' ' + r.team+':'+ i.toString() + ',' + y.toString() + ';' + this.state.Rounds[i][y].toString() ) } }) : [];
+
+                //    content.push(
+                //        <div key={i.toString() + y.toString()}>
+                //    {this.state.Rounds[i][y]}
+                //</div>);
+                children.push(
+                    <div key={i.toString() + y.toString()}>
+                            <label htmlFor={i.toString() + ',' + y.toString()}>Pick {y + 1} </label>
+                        <input id={i.toString() + ',' + y.toString() + ';' + this.state.Rounds[i][y].toString()} key={i.toString() + y.toString()} type="text" className="mm-popup__input" defaultValue={this.state.Rounds[i][y].toString()} onChange={this.updatetrade} />
+                        <section id={i.toString() + ',' + y.toString() + ';' + this.state.Rounds[i][y].toString()}>
+                            <Dropdown
+                                options={options}
+                                onChange={this.updatekeeper}
+                                placeholder="Välj spelare att behålla" />
+
+                        </section>
+                    </div>
+                );
+            }
+        }
+        content.push(<form onSubmit={this.savetrade}><button type="submit">Spara</button>{children}</form>);
+        //let content = (
+        //    <div>
+        //        {this.state.Rounds[0][0]}
+        //    </div>
+        
+        //)
+
+        PopupboxManager.open({ content })
+    }
+
+
+    updatekeeper(option: any) {
+        console.log(option)
+        if (!option.value.length) {
+            return;
+        }
+        let allkeepers = this.state.keepers.slice();
+        let allreadyexist = false;
+        for (let i = 0; i < this.state.keepers.length; i++) {
+            console.log(allkeepers[i].split(':')[0])
+
+            if (allkeepers[i].split(':')[1] == option.value.split(':')[1]) {
+                allkeepers[i] = option.value;
+                allreadyexist = true;
+            }
+        }
+        if (!allreadyexist) {
+            allkeepers.push(option.value)
+        }
+        console.log(option.value)
+        console.log(allkeepers);
+        this.setState({ keepers: allkeepers });
+    }
+
+    updatetrade(e: any) {
+        let alltrades = this.state.trades.slice();
+        let allreadyexist = false;
+        for (let i = 0; i < this.state.trades.length; i++) {
+            console.log(alltrades[i].split(':')[0])
+
+            if (alltrades[i].split(':')[0] == e.target.id) {
+                alltrades[i] = e.target.id + ':' + e.target.value;
+                allreadyexist = true;
+            }
+        }
+        if (!allreadyexist) {
+            alltrades.push(e.target.id + ':' + e.target.value)
+        }
+        console.log(e.target.id)
+        console.log(alltrades);
+        this.setState({ trades: alltrades });
+    }
+
+    savetrade(e: any) {
+        e.preventDefault()
+        let teams = this.state.teams.slice();
+        let rounds = this.state.Rounds.slice();
+
+        for (let i = 0; i < this.state.trades.length; i++) {
+          
+                rounds[parseInt(this.state.trades[i].split(':')[0].split(',')[0])][parseInt(this.state.trades[i].split(':')[0].split(',')[1])] = parseInt(this.state.trades[i].split(':')[1])
+        }
+        for (let i = 0; i < this.state.keepers.length; i++) {
+            let player: Player = { name: '', number: 0, position: '', team: '' };
+
+            for (let u = 0; u < teams[parseInt(this.state.keepers[i].split(':')[1].split(';')[1]) - 1].Ranking.length; u++) {
+                if (teams[parseInt(this.state.keepers[i].split(':')[1].split(';')[1]) - 1].Ranking[u].name + ' '+teams[parseInt(this.state.keepers[i].split(':')[1].split(';')[1]) - 1].Ranking[u].position + ' '+teams[parseInt(this.state.keepers[i].split(':')[1].split(';')[1]) - 1].Ranking[u].team == this.state.keepers[i].split(':')[0]) {
+                    player = teams[parseInt(this.state.keepers[i].split(':')[1].split(';')[1]) - 1].Ranking[u];
+                }
+            }
+            teams[parseInt(this.state.keepers[i].split(':')[1].split(';')[1]) - 1].SelectedPlayers.push(player)
+
+            if (this.state.draftnumber > 0) {
+                let ranking = teams[this.state.draftnumber - 1].Ranking.slice();
+
+                let count = 0;
+                while (true) {
+                    if (teams[this.state.draftnumber - 1].Ranking[count].name === player.name && teams[this.state.draftnumber - 1].Ranking[count].position === player.position && teams[this.state.draftnumber - 1].Ranking[count].team === player.team) {
+                        break;
+                    } else {
+                        count++;
+                    }
+                }
+                ranking.splice(count, 1);
+                teams[this.state.draftnumber - 1].Ranking = ranking;
+            }
+
+   
+
+            //TODO: ta bort draftnummer i rounds
+            rounds[parseInt(this.state.keepers[i].split(':')[1].split(';')[0].split(',')[0])][parseInt(this.state.keepers[i].split(':')[1].split(';')[0].split(',')[1])] = 0;
+        }
+        this.setState({ teams:teams, Rounds:rounds });
+
+
+    }
+
     render() {
-	 //   const options = [
-		//    'one', 'two', 'three'
-		//];
+        const popupboxConfig = {
+            titleBar: {
+                enable: true,
+                text: 'Trades and keepers'
+            },
+            fadeIn: true,
+            fadeInSpeed: 500
+        }
 		const options = this.state.teams[this.state.draftnumber - 1] !=null ? this.state.teams[this.state.draftnumber - 1].Ranking.map((r) => {return (r.name+ ' '+r.position+' '+r.team)}): [];
-	    //const defaultOption = 'one';
 	    return (
 
 			<div>
@@ -686,6 +850,8 @@ class Draft extends React.Component<any, DraftState> {
 				<form onSubmit={this.handleSubmit}>
 					<button id="draft-number" >Börja draft</button>
                 </form>
+                <button onClick={this.openPopupbox}>Justera trades och keepers</button>
+                <PopupboxContainer {...popupboxConfig}/>
                 <div>Rundnummer {this.state.CurrentRound}</div>
 			
 				<section>
@@ -760,6 +926,7 @@ class AllPlayers extends React.Component<AllPlayersInterface, any> {
 		);
 	}
 }
+
 
 //{
 //	this.props.Players.map(item => (
