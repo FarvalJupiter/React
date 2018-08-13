@@ -22,6 +22,7 @@ interface DraftState {
 	keepers: string[];
 	DefaultRanking: Player[];
 	SelectableRules: string[];
+	options:string[];
 
 
 }
@@ -126,7 +127,8 @@ class Draft extends React.Component<any, DraftState> {
         this.updatetrade = this.updatetrade.bind(this);
 		this.updatekeeper = this.updatekeeper.bind(this);
 		this.updateRules = this.updateRules.bind(this);
-        this.savetrade = this.savetrade.bind(this);
+		this.savetrade = this.savetrade.bind(this);
+		this.filterList = this.filterList.bind(this);
 		this.state = {
 			Rounds: allrounds,
 			CurrentRound: 1,
@@ -143,7 +145,8 @@ class Draft extends React.Component<any, DraftState> {
 				'RB-WR RB-tung|Min|QB:1,RB:5,WR:3,TE:1,K:1,DST:1|Max|QB:2,RB:8,WR:5,TE:2,K:1,DST:1',
 				'RB-WR WR-tung|Min|QB:1,RB:4,WR:5,TE:1,K:1,DST:1|Max|QB:2,RB:6,WR:8,TE:2,K:1,DST:1',
 				'RB-WR balanserad|Min|QB:1,RB:5,WR:5,TE:1,K:1,DST:1|Max|QB:2,RB:7,WR:7,TE:2,K:1,DST:1',
-			]
+			],
+			options:[],
 		};
 
 	}
@@ -157,7 +160,8 @@ class Draft extends React.Component<any, DraftState> {
 			selectplayer: this.state.selectplayer,
 			selectedPlayers: this.state.selectedPlayers,
 			trades: this.state.trades,
-			keepers:this.state.keepers
+			keepers: this.state.keepers,
+			options: this.state.teams[e.target.value - 1] != null ? this.state.teams[e.target.value - 1].Ranking.map((r) => { return (r.name + ' ' + r.position + ' ' + r.team) }) : []
 		});
 	}
 
@@ -240,7 +244,8 @@ class Draft extends React.Component<any, DraftState> {
 			selectplayer: this.state.selectplayer,
 			selectedPlayers: this.state.selectedPlayers,
 			trades: this.state.trades,
-			keepers: this.state.keepers
+			keepers: this.state.keepers,
+			options: this.state.teams[this.state.draftnumber - 1] != null ? this.state.teams[this.state.draftnumber - 1].Ranking.map((r) => { return (r.name + ' ' + r.position + ' ' + r.team) }) : []
 			
 		});
     }
@@ -553,7 +558,9 @@ class Draft extends React.Component<any, DraftState> {
 			selectplayer: this.state.selectplayer,
 			selectedPlayers: this.state.selectedPlayers,
 			trades: this.state.trades,
-			keepers: this.state.keepers
+			keepers: this.state.keepers,
+			options: this.state.teams[this.state.draftnumber - 1] != null ? this.state.teams[this.state.draftnumber - 1].Ranking.map((r) => { return (r.name + ' ' + r.position + ' ' + r.team) }) : []
+
 		});
 
 	}
@@ -970,7 +977,12 @@ class Draft extends React.Component<any, DraftState> {
       
             rounds[parseInt(this.state.keepers[i].split(':')[1].split(';')[0].split(',')[0])][parseInt(this.state.keepers[i].split(':')[1].split(';')[0].split(',')[1])] = 0;
         }
-        this.setState({ teams:teams, Rounds:rounds });
+        this.setState({
+			teams: teams,
+			Rounds: rounds,
+			options: this.state.teams[this.state.draftnumber - 1] != null ? this.state.teams[this.state.draftnumber - 1].Ranking.map((r) => { return (r.name + ' ' + r.position + ' ' + r.team) }) : []
+
+        });
 
 
 	}
@@ -999,14 +1011,20 @@ class Draft extends React.Component<any, DraftState> {
 	}
 
 
-	//filterList: function(event){
-	//var updatedList = this.state.initialItems;
-	//updatedList = updatedList.filter(function (item) {
-	//	return item.toLowerCase().search(
-	//		event.target.value.toLowerCase()) !== -1;
-	//});
-	//this.setState({ items: updatedList });
-	//}
+	filterList(event: any) {
+		console.log(event.target.checked)
+		console.log(event.target.value)
+		let updatedList = this.state.teams[this.state.draftnumber - 1] != null ? this.state.teams[this.state.draftnumber - 1].Ranking.map((r) => { return (r.name + ' ' + r.position + ' ' + r.team) }) : [];
+		if (event.target.checked) {
+			console.log('searc')
+			updatedList = updatedList.filter(function(item) {
+				return item.toLowerCase().search(
+						event.target.value.toLowerCase()) !==
+					-1;
+			});
+		}
+		this.setState({ options: updatedList });
+	}
 
 
     render() {
@@ -1018,7 +1036,7 @@ class Draft extends React.Component<any, DraftState> {
             fadeIn: true,
             fadeInSpeed: 500
         }
-		const options = this.state.teams[this.state.draftnumber - 1] !=null ? this.state.teams[this.state.draftnumber - 1].Ranking.map((r) => {return (r.name+ ' '+r.position+' '+r.team)}): [];
+	//	const options = this.state.teams[this.state.draftnumber - 1] !=null ? this.state.teams[this.state.draftnumber - 1].Ranking.map((r) => {return (r.name+ ' '+r.position+' '+r.team)}): [];
 	    return (
 
 			<div>
@@ -1048,8 +1066,27 @@ class Draft extends React.Component<any, DraftState> {
                 <div>Rundnummer {this.state.CurrentRound}</div>
 			
 				<section>
+
+					<label>QB
+						<input type="checkbox" placeholder="Search" value=" QB " onChange={this.filterList} />
+					</label>
+					<label>RB
+						<input type="checkbox" placeholder="Search" value=" RB " onChange={this.filterList} />
+					</label>
+					<label>WR
+						<input type="checkbox" placeholder="Search" value=" WR " onChange={this.filterList} />
+					</label>
+					<label>TE
+						<input type="checkbox" placeholder="Search" value=" TE " onChange={this.filterList} />
+					</label>
+					<label>K
+						<input type="checkbox" placeholder="Search" value=" K " onChange={this.filterList} />
+					</label>
+					<label>DST
+						<input type="checkbox" placeholder="Search" value=" DST " onChange={this.filterList} />
+					</label>
 					<Dropdown 
-						options={options}
+						options={this.state.options}
 						onChange={this.handleSubmitPlayer}
 						placeholder="välj en spelare" >
 						
@@ -1063,19 +1100,10 @@ class Draft extends React.Component<any, DraftState> {
 		);
 	}
 }
-//					<input type="text" placeholder="Search" onChange={this.filterList}/>
 
 
-//<input
-//	name="isGoing"
+//					<input type="text" placeholder="Search" onChange={this.filterList} />
 
-//	type="checkbox"
-
-//	//	checked=true
-
-//	//onChange={this.handleInputChange} 
-
-///>
 
 
 //<form onSubmit={this.handleSubmitPlayer}>
