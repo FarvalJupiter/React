@@ -14,14 +14,16 @@ import 'react-dropdown/style.css';
 interface DraftState {
 	Rounds: number[][];
 	CurrentRound: number;
-	MinRules: string;
-	MaxRules: string;
 	draftnumber: number;
 	teams: TeamState[];
 	selectedPlayers: string[];
     selectplayer: string;
     trades: string[];
-    keepers: string[];
+	keepers: string[];
+	DefaultRanking: Player[];
+	SelectableRules: string[];
+
+
 }
 
 interface Player {
@@ -35,33 +37,38 @@ interface TeamState {
 	SelectedPlayers: Player[];
     Teamnumber: number;
 	MinRulesFullfilled: boolean;
+	TeamName: string;
+	MinRules: string;
+	MaxRules: string;
+	SelectedRule:string;
 }
 interface GameState {
 	Round: number;
 }
 
-function Team(props:any) {
-	let allRanking: string='';
-	for (let i = 0; i < props.Ranking.length; i++) {
-		allRanking = allRanking.concat(props.Ranking[i].number +
-			" " +
-			props.Ranking[i].name +
-			" " +
-			props.Ranking[i].position +
-			" " +
-			props.Ranking[i].team);
-	}
+function Team(props: any) {
+	
+	//let allRanking: string='';
+	//for (let i = 0; i < props.Ranking.length; i++) {
+	//	allRanking = allRanking.concat(props.Ranking[i].number +
+	//		" " +
+	//		props.Ranking[i].name +
+	//		" " +
+	//		props.Ranking[i].position +
+	//		" " +
+	//		props.Ranking[i].team);
+	//}
 
-	let allPlayers: string = '';
-	for (let i = 0; i < props.SelectedPlayers.length; i++) {
-		allPlayers = allPlayers.concat(props.SelectedPlayers[i].number +
-			" " +
-			props.SelectedPlayers[i].name +
-			" " +
-			props.SelectedPlayers[i].position +
-			" " +
-			props.SelectedPlayers[i].team);
-	}
+	//let allPlayers: string = '';
+	//for (let i = 0; i < props.SelectedPlayers.length; i++) {
+	//	allPlayers = allPlayers.concat(props.SelectedPlayers[i].number +
+	//		" " +
+	//		props.SelectedPlayers[i].name +
+	//		" " +
+	//		props.SelectedPlayers[i].position +
+	//		" " +
+	//		props.SelectedPlayers[i].team);
+	//}
 
 		return (<div>
 		<div>	Lag {props.Teamnumber}</div>
@@ -83,7 +90,11 @@ class Draft extends React.Component<any, DraftState> {
 				Ranking: new Array<Player>(),
 				SelectedPlayers: new Array<Player>(),
 				Teamnumber: i,
-				MinRulesFullfilled: false
+				MinRulesFullfilled: false,
+				TeamName: 'Lag' + i,
+				MinRules: 'QB:1,RB:2,WR:2,TE:1,K:1,DST:1',
+					MaxRules: 'QB:3,RB:6,WR:6,TE:3,K:2,DST:2',
+				SelectedRule:'Default'
 		};
 			teamstemp.push(team);
 		}
@@ -93,13 +104,13 @@ class Draft extends React.Component<any, DraftState> {
 			let round : number[]= new Array<number>();
 			if (i % 2 === 1) {
 				//TODO ändra till 11 3
-				for (let team = 1; team < 3; team++) {
+				for (let team = 1; team <11; team++) {
 					round.push(team);
 				}
 			}
 			else {
 				//TODO: ändra till 10 2
-				for (let team = 2; team > 0; team--) {
+				for (let team = 10; team > 0; team--) {
 					round.push(team);
 				}
 			}
@@ -107,25 +118,32 @@ class Draft extends React.Component<any, DraftState> {
 		}
 
 		this.handleChange = this.handleChange.bind(this);
+		this.handleChangeTeamName = this.handleChangeTeamName.bind(this);
 		this.handleSubmit = this.handleSubmit.bind(this);
 		this.handleChangePlayer = this.handleChangePlayer.bind(this);
         this.handleSubmitPlayer = this.handleSubmitPlayer.bind(this);
         this.openPopupbox = this.openPopupbox.bind(this);
         this.updatetrade = this.updatetrade.bind(this);
-        this.updatekeeper = this.updatekeeper.bind(this);
+		this.updatekeeper = this.updatekeeper.bind(this);
+		this.updateRules = this.updateRules.bind(this);
         this.savetrade = this.savetrade.bind(this);
 		this.state = {
 			Rounds: allrounds,
 			CurrentRound: 1,
-            MinRules: 'QB:1,RB:2,WR:2,TE:1,K:1,DST:1',
-            MaxRules: 'QB:3,RB:6,WR:6,TE:3,K:2,DST:2',
+
 			draftnumber: 0,
 			teams: teamstemp,
 			selectedPlayers: [],
             selectplayer: '',
             trades: [],
-            keepers:[]
-
+			keepers: [],
+			DefaultRanking: new Array<Player>(),
+			SelectableRules:[
+				'Default|Min|QB:1,RB:2,WR:2,TE:1,K:1,DST:1|Max|QB:3,RB:6,WR:6,TE:3,K:2,DST:2',
+				'RB-WR RB-tung|Min|QB:1,RB:5,WR:3,TE:1,K:1,DST:1|Max|QB:2,RB:8,WR:5,TE:2,K:1,DST:1',
+				'RB-WR WR-tung|Min|QB:1,RB:4,WR:5,TE:1,K:1,DST:1|Max|QB:2,RB:6,WR:8,TE:2,K:1,DST:1',
+				'RB-WR balanserad|Min|QB:1,RB:5,WR:5,TE:1,K:1,DST:1|Max|QB:2,RB:7,WR:7,TE:2,K:1,DST:1',
+			]
 		};
 
 	}
@@ -134,15 +152,23 @@ class Draft extends React.Component<any, DraftState> {
 		this.setState({
 			Rounds: this.state.Rounds,
 			CurrentRound: this.state.CurrentRound,
-			MinRules:this.state.MinRules,
-			MaxRules:this.state.MaxRules,
 			draftnumber: e.target.value,
 			teams: this.state.teams,
 			selectplayer: this.state.selectplayer,
-			selectedPlayers: this.state.selectedPlayers
+			selectedPlayers: this.state.selectedPlayers,
+			trades: this.state.trades,
+			keepers:this.state.keepers
 		});
 	}
 
+	handleChangeTeamName(e: any) {
+		let teams = this.state.teams.slice();
+
+		teams[e.target.id.split(',')[1]] = e.target.value;
+		this.setState({
+			teams:teams
+		});
+	}
 
 	handleSubmit(e: any) {
 		e.preventDefault();
@@ -173,12 +199,12 @@ class Draft extends React.Component<any, DraftState> {
 			this.setState({
 				Rounds: rounds,
 				CurrentRound: currentRound,
-				MinRules: this.state.MinRules,
-				MaxRules: this.state.MaxRules,
 				draftnumber: this.state.draftnumber,
 				teams: this.state.teams,
 				selectplayer: this.state.selectplayer,
-				selectedPlayers: this.state.selectedPlayers
+				selectedPlayers: this.state.selectedPlayers,
+				trades: this.state.trades,
+				keepers: this.state.keepers
 			});
 			if (breakit) {
 				break;
@@ -209,12 +235,13 @@ class Draft extends React.Component<any, DraftState> {
 		this.setState({
 			Rounds: this.state.Rounds,
 			CurrentRound: this.state.CurrentRound,
-			MinRules: this.state.MinRules,
-			MaxRules: this.state.MaxRules,
 			draftnumber: this.state.draftnumber,
 			teams: teams,
 			selectplayer: this.state.selectplayer,
-			selectedPlayers: this.state.selectedPlayers
+			selectedPlayers: this.state.selectedPlayers,
+			trades: this.state.trades,
+			keepers: this.state.keepers
+			
 		});
     }
 
@@ -265,7 +292,7 @@ class Draft extends React.Component<any, DraftState> {
 			}
 		}
 
-	        let minrules = this.state.MinRules.split(',');
+		let minrules = teams[teamnumber - 1].MinRules.split(',');
 
 	        for (let j = 0; j < minrules.length; j++) {
 		        if (minrules[j].split(':')[0] == 'QB') {
@@ -299,7 +326,7 @@ class Draft extends React.Component<any, DraftState> {
 			teams[teamnumber - 1].MinRulesFullfilled = false;
 		}
 
-		let maxrules = this.state.MaxRules.split(',');
+		let maxrules = teams[teamnumber - 1].MaxRules.split(',');
 
             for (let j = 0; j < maxrules.length; j++) {
                 if (maxrules[j].split(':')[0] == 'QB') {
@@ -521,12 +548,12 @@ class Draft extends React.Component<any, DraftState> {
 		this.setState({
 			Rounds: this.state.Rounds,
 			CurrentRound: this.state.CurrentRound,
-			MinRules: this.state.MinRules,
-			MaxRules: this.state.MaxRules,
 			draftnumber: this.state.draftnumber,
 			teams: teams,
 			selectplayer: this.state.selectplayer,
-			selectedPlayers: this.state.selectedPlayers
+			selectedPlayers: this.state.selectedPlayers,
+			trades: this.state.trades,
+			keepers: this.state.keepers
 		});
 
 	}
@@ -536,12 +563,12 @@ class Draft extends React.Component<any, DraftState> {
 		this.setState({
 			Rounds: this.state.Rounds,
 			CurrentRound: this.state.CurrentRound,
-			MinRules: this.state.MinRules,
-			MaxRules: this.state.MaxRules,
 			draftnumber: this.state.draftnumber,
 			teams: this.state.teams,
 			selectplayer: e.target.value,
-			selectedPlayers: this.state.selectedPlayers
+			selectedPlayers: this.state.selectedPlayers,
+			trades: this.state.trades,
+			keepers: this.state.keepers
 		});
 	}
 
@@ -568,12 +595,12 @@ class Draft extends React.Component<any, DraftState> {
 		this.setState({
 			Rounds: rounds,
 			CurrentRound: currentRound,
-			MinRules: this.state.MinRules,
-			MaxRules: this.state.MaxRules,
 			draftnumber: this.state.draftnumber,
 			teams: this.state.teams,
 			selectplayer: '',
-			selectedPlayers: this.state.selectedPlayers
+			selectedPlayers: this.state.selectedPlayers,
+			trades: this.state.trades,
+			keepers: this.state.keepers
 		});
 
 		for (let y = 0; y < rounds.length; y) {
@@ -602,12 +629,12 @@ class Draft extends React.Component<any, DraftState> {
 			this.setState({
 				Rounds: rounds,
 				CurrentRound: currentRound,
-				MinRules: this.state.MinRules,
-				MaxRules: this.state.MaxRules,
 				draftnumber: this.state.draftnumber,
 				teams: this.state.teams,
 				selectplayer: '',
-				selectedPlayers: this.state.selectedPlayers
+				selectedPlayers: this.state.selectedPlayers,
+				trades: this.state.trades,
+				keepers: this.state.keepers
 			});
 			if (breakit) {
 				break;
@@ -645,12 +672,98 @@ class Draft extends React.Component<any, DraftState> {
 			this.setState({
 				Rounds: this.state.Rounds,
 				CurrentRound: this.state.CurrentRound,
-				MinRules: this.state.MinRules,
-				MaxRules: this.state.MaxRules,
 				teams: teams,
 				draftnumber: this.state.draftnumber,
 				selectplayer: this.state.selectplayer,
-				selectedPlayers: this.state.selectedPlayers
+				selectedPlayers: this.state.selectedPlayers,
+				trades: this.state.trades,
+				keepers: this.state.keepers
+			});
+		};
+		fileReader.readAsText(file);
+
+
+	};
+
+	private handleRulesFileChosen = (file: any, teamnumber: number) => {
+		let fileReader = new FileReader();
+		fileReader.onloadend = (e) => {
+			let content = fileReader.result;
+			const teams = this.state.teams.slice();
+			if (content.startsWith("Position,Min,Max")) {
+
+				content = content.substring(("Position,Min,Max/n").length, content.length);
+			}
+			let minrules = '';
+			let maxrules = '';
+			for (var i = 0; i < content.split('\n').length; i++) {
+
+				if (content.split('\n')[i].split(',')[0] == 'QB' ||
+					content.split('\n')[i].split(',')[0] == 'RB' ||
+					content.split('\n')[i].split(',')[0] == 'WR' ||
+					content.split('\n')[i].split(',')[0] == 'TE' ||
+					content.split('\n')[i].split(',')[0] == 'K' ||
+					content.split('\n')[i].split(',')[0] == 'DST') {
+
+					minrules=minrules.concat(content.split('\n')[i].split(',')[0] + ':' + content.split('\n')[i].split(',')[1] + ',')
+					maxrules=maxrules.concat(content.split('\n')[i].split(',')[0] + ':' + content.split('\n')[i].split(',')[2] + ',')
+				}
+			}
+			teams[teamnumber - 1].MinRules = minrules.substring(0, minrules.length-1);
+			teams[teamnumber - 1].MaxRules = maxrules.substring(0, maxrules.length-1);
+			this.setState({
+				Rounds: this.state.Rounds,
+				CurrentRound: this.state.CurrentRound,
+				teams: teams,
+				draftnumber: this.state.draftnumber,
+				selectplayer: this.state.selectplayer,
+				selectedPlayers: this.state.selectedPlayers,
+				trades: this.state.trades,
+				keepers: this.state.keepers
+			});
+		};
+		fileReader.readAsText(file);
+
+
+	};
+
+	private handleFileChosenDefault = (file: any) => {
+		let fileReader = new FileReader();
+		fileReader.onloadend = (e) => {
+			let content = fileReader.result;
+			if (content.startsWith("Rank,Namn,Position,Lag")) {
+
+				content = content.substring(("Rank,Namn,Position,Lag/n").length, content.length);
+			}
+			let players: Player[] = new Array<Player>();
+			for (var i = 0; i < content.split('\n').length; i++) {
+				let player: Player = {
+					number: content.split('\n')[i].split(',')[0],
+					name: content.split('\n')[i].split(',')[1],
+					position: content.split('\n')[i].split(',')[2],
+					team: content.split('\n')[i].split(',')[3],
+				}
+				players.push(player);
+			}
+
+			let teams = this.state.teams.slice();
+
+			for (let y = 0; y < teams.length; y++) {
+				if (teams[y].Ranking.length == 0) {
+					teams[y].Ranking=players
+				}
+			}
+
+			this.setState({
+				Rounds: this.state.Rounds,
+				CurrentRound: this.state.CurrentRound,
+				teams: teams,
+				draftnumber: this.state.draftnumber,
+				selectplayer: this.state.selectplayer,
+				selectedPlayers: this.state.selectedPlayers,
+				trades: this.state.trades,
+				keepers: this.state.keepers,
+				DefaultRanking: players
 			});
 		};
 		fileReader.readAsText(file);
@@ -658,8 +771,44 @@ class Draft extends React.Component<any, DraftState> {
 
 	};
 	
-	renderTeam(i:any){
+	renderTeam(i: any) {
+		let optionsrules = this.state.SelectableRules.map((r) => {
+			return { label: (r.split('|')[0]), value: (r.split('|')[0] + ':' + i.toString()) }
+		});
+		let id = 0;
+		for (let y = 0; y < optionsrules.length; y++) {
+			if (this.state.teams[i - 1].SelectedRule == optionsrules[y].label) {
+				id = y;
+			}
+		}
+		let defaultvalue = optionsrules[id];
 		return (<div>Lag {i}
+			        <form>
+				        <label htmlFor="team-name">
+					        Lagnamn
+				        </label>
+				        <input
+					id={'team-name,'+(i-1).toString()}
+					        onChange={this.handleChangeTeamName}
+					value={this.state.teams[i - 1].TeamName}
+				        />
+			</form>
+			        <label>Regler</label>
+			<section>
+			        <Dropdown
+				options={optionsrules}
+				onChange={this.updateRules}
+				value={defaultvalue}
+				/>
+			</section>
+			<label htmlFor="file">Välj regler via fil</label>
+			        <input type='file'
+			               id='file'
+			               className='input-file'
+			               accept='.csv'
+			               onChange={(e: React.ChangeEvent<HTMLInputElement>) => e != null && e.target != null && e.target.files != null ? this.handleRulesFileChosen(e.target.files[0], i) : alert("null")}
+			        />
+			<label htmlFor="file">Ranking:</label>
 			        <input type='file'
 			               id='file'
 			               className='input-file'
@@ -667,7 +816,7 @@ class Draft extends React.Component<any, DraftState> {
 			               onChange={(e: React.ChangeEvent<HTMLInputElement>) => e != null && e.target != null && e.target.files != null ? this.handleFileChosen(e.target.files[0], i) : alert("null")}
             />
 	
-			<Team Teamnumber={i} SelectedPlayers={this.state.teams[i - 1].SelectedPlayers} Ranking={this.state.teams[i-1].Ranking} /></div>);
+			<Team TeamName={this.state.teams[i - 1].TeamName} Teamnumber={i} SelectedPlayers={this.state.teams[i - 1].SelectedPlayers} Ranking={this.state.teams[i-1].Ranking} /></div>);
 
 	}	
 
@@ -675,7 +824,7 @@ class Draft extends React.Component<any, DraftState> {
 	CreateBoard = () => {
 		let table: any[] = [];
 		//TOOO ändra till 11
-		for (let i = 1; i < 3; i++) {
+		for (let i = 1; i < 11; i++) {
 			table.push(<div key={i} className="board-row">{this.renderTeam(i)}</div>);
 		}
 		return table;
@@ -685,35 +834,32 @@ class Draft extends React.Component<any, DraftState> {
 
         let children = [];
         let content = [];
-        const options = [
-            { value: 'one', label: 'One' },
-            { value: 'two', label: 'Two' },
-            {
-                type: 'group', name: 'group1', items: [
-                    { value: 'three', label: 'Three' },
-                    { value: 'four', label: 'Four' }
-                ]
-            },
-            {
-                type: 'group', name: 'group2', items: [
-                    { value: 'five', label: 'Five' },
-                    { value: 'six', label: 'Six' }
-                ]
-            }
-        ]
+
         for (let i = 0; i < this.state.Rounds.length; i++) {
-                children.push(<div key={'runda' + i.toString()}>Runda {i + 1}</div>)
+			children.push(<h2 key={'runda' + i.toString()}>Runda {i + 1}</h2>)
+
             for (let y = 0; y < this.state.Rounds[i].length; y++) {
                 const options = this.state.teams[this.state.draftnumber - 1] != null ? this.state.teams[this.state.draftnumber - 1].Ranking.map((r) => { return { label: (r.name + ' ' + r.position + ' ' + r.team), value: (r.name + ' ' + r.position + ' ' + r.team+':'+ i.toString() + ',' + y.toString() + ';' + this.state.Rounds[i][y].toString() ) } }) : [];
+				const optionsTeam = this.state.teams.map((r) => { return { label: (r.TeamName), value: (r.TeamName + ':' + i.toString() + ',' + y.toString()) } });
 
                 //    content.push(
                 //        <div key={i.toString() + y.toString()}>
                 //    {this.state.Rounds[i][y]}
                 //</div>);
+
+	        //    <input id={i.toString() + ',' + y.toString() + ';' + this.state.Rounds[i][y].toString()} key={i.toString() + y.toString()} type="text" className="mm-popup__input" defaultValue={this.state.Rounds[i][y].toString()} onChange={this.updatetrade} />
+
                 children.push(
                     <div key={i.toString() + y.toString()}>
-                            <label htmlFor={i.toString() + ',' + y.toString()}>Pick {y + 1} </label>
-                        <input id={i.toString() + ',' + y.toString() + ';' + this.state.Rounds[i][y].toString()} key={i.toString() + y.toString()} type="text" className="mm-popup__input" defaultValue={this.state.Rounds[i][y].toString()} onChange={this.updatetrade} />
+						<label htmlFor={i.toString() + ',' + y.toString()}>Pick {y + 1} </label>
+	                    <section id={i.toString() + ',' + y.toString() + ';' + this.state.Rounds[i][y].toString()}>
+		                    <Dropdown
+			                    options={optionsTeam}
+								onChange={this.updatetrade}
+								value={optionsTeam[this.state.Rounds[i][y]-1]}
+			                     />
+
+	                    </section>
                         <section id={i.toString() + ',' + y.toString() + ';' + this.state.Rounds[i][y].toString()}>
                             <Dropdown
                                 options={options}
@@ -760,21 +906,20 @@ class Draft extends React.Component<any, DraftState> {
         this.setState({ keepers: allkeepers });
     }
 
-    updatetrade(e: any) {
+    updatetrade(option: any) {
         let alltrades = this.state.trades.slice();
         let allreadyexist = false;
         for (let i = 0; i < this.state.trades.length; i++) {
             console.log(alltrades[i].split(':')[0])
 
-            if (alltrades[i].split(':')[0] == e.target.id) {
-                alltrades[i] = e.target.id + ':' + e.target.value;
+			if (alltrades[i].split(':')[1] == option.value.split(':')[1]) {
+                alltrades[i] = option.value;
                 allreadyexist = true;
             }
         }
         if (!allreadyexist) {
-            alltrades.push(e.target.id + ':' + e.target.value)
+            alltrades.push(option.value)
         }
-        console.log(e.target.id)
         console.log(alltrades);
         this.setState({ trades: alltrades });
     }
@@ -784,10 +929,17 @@ class Draft extends React.Component<any, DraftState> {
         let teams = this.state.teams.slice();
         let rounds = this.state.Rounds.slice();
 
-        for (let i = 0; i < this.state.trades.length; i++) {
-          
-                rounds[parseInt(this.state.trades[i].split(':')[0].split(',')[0])][parseInt(this.state.trades[i].split(':')[0].split(',')[1])] = parseInt(this.state.trades[i].split(':')[1])
-        }
+		for (let i = 0; i < this.state.trades.length; i++) {
+		    let teamnumber = 0;
+			for (let y = 0; y < this.state.teams.length; y++) {
+				if (this.state.teams[y].TeamName == this.state.trades[i].split(':')[0]) {
+					teamnumber = y+1;
+				}
+			}
+	    rounds[parseInt(this.state.trades[i].split(':')[1].split(',')[0])][parseInt(
+		    this.state.trades[i].split(':')[1].split(',')[1])] = teamnumber;
+	    //parseInt(this.state.trades[i].split(':')[1])
+    }
         for (let i = 0; i < this.state.keepers.length; i++) {
             let player: Player = { name: '', number: 0, position: '', team: '' };
 
@@ -815,13 +967,47 @@ class Draft extends React.Component<any, DraftState> {
 
    
 
-            //TODO: ta bort draftnummer i rounds
+      
             rounds[parseInt(this.state.keepers[i].split(':')[1].split(';')[0].split(',')[0])][parseInt(this.state.keepers[i].split(':')[1].split(';')[0].split(',')[1])] = 0;
         }
         this.setState({ teams:teams, Rounds:rounds });
 
 
-    }
+	}
+
+
+
+	updateRules(option: any) {
+		let teams = this.state.teams.slice();
+		let rules = '';
+		for (let i = 0; i < this.state.SelectableRules.length; i++) {
+			if (this.state.SelectableRules[i].split('|')[0] == option.label) {
+				rules = this.state.SelectableRules[i];
+			}
+		}
+		console.log(parseInt(option.value.split(':')[1]))
+		teams[parseInt(option.value.split(':')[1])-1].MinRules = rules.split('|')[2];
+		teams[parseInt(option.value.split(':')[1]) - 1].MaxRules = rules.split('|')[4];
+		teams[parseInt(option.value.split(':')[1]) - 1].SelectedRule = option.label;
+		console.log(option.value);
+		console.log(teams[parseInt(option.value.split(':')[1]) - 1].MinRules);
+		console.log(teams[parseInt(option.value.split(':')[1]) - 1].MaxRules);
+		this.setState({
+			teams: teams,
+			SelectableRules: this.state.SelectableRules
+		});
+	}
+
+
+	//filterList: function(event){
+	//var updatedList = this.state.initialItems;
+	//updatedList = updatedList.filter(function (item) {
+	//	return item.toLowerCase().search(
+	//		event.target.value.toLowerCase()) !== -1;
+	//});
+	//this.setState({ items: updatedList });
+	//}
+
 
     render() {
         const popupboxConfig = {
@@ -836,6 +1022,13 @@ class Draft extends React.Component<any, DraftState> {
 	    return (
 
 			<div>
+				<label>Defaultranking</label>
+				<input type='file'
+				       id='file'
+				       className='input-file'
+				       accept='.csv'
+				       onChange={(e: React.ChangeEvent<HTMLInputElement>) => e != null && e.target != null && e.target.files != null ? this.handleFileChosenDefault(e.target.files[0]) : alert("null")}
+				/>
 				<form>
 					<label htmlFor="draft-number">
 						Vilket draftnummer har du?
@@ -855,11 +1048,12 @@ class Draft extends React.Component<any, DraftState> {
                 <div>Rundnummer {this.state.CurrentRound}</div>
 			
 				<section>
-					<Dropdown
+					<Dropdown 
 						options={options}
-						onChange={this.handleSubmitPlayer}
-						//value={defaultOption}
-						placeholder="välj en spelare" />
+						onChange={this.handleSubmitPlayer}
+						placeholder="välj en spelare" >
+						
+					</Dropdown>
 
 				</section>
 
@@ -869,7 +1063,19 @@ class Draft extends React.Component<any, DraftState> {
 		);
 	}
 }
+//					<input type="text" placeholder="Search" onChange={this.filterList}/>
 
+
+//<input
+//	name="isGoing"
+
+//	type="checkbox"
+
+//	//	checked=true
+
+//	//onChange={this.handleInputChange} 
+
+///>
 
 
 //<form onSubmit={this.handleSubmitPlayer}>
