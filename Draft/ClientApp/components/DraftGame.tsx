@@ -50,27 +50,7 @@ interface GameState {
 
 function Team(props: any) {
 	
-	//let allRanking: string='';
-	//for (let i = 0; i < props.Ranking.length; i++) {
-	//	allRanking = allRanking.concat(props.Ranking[i].number +
-	//		" " +
-	//		props.Ranking[i].name +
-	//		" " +
-	//		props.Ranking[i].position +
-	//		" " +
-	//		props.Ranking[i].team);
-	//}
 
-	//let allPlayers: string = '';
-	//for (let i = 0; i < props.SelectedPlayers.length; i++) {
-	//	allPlayers = allPlayers.concat(props.SelectedPlayers[i].number +
-	//		" " +
-	//		props.SelectedPlayers[i].name +
-	//		" " +
-	//		props.SelectedPlayers[i].position +
-	//		" " +
-	//		props.SelectedPlayers[i].team);
-	//}
 
 		return (<div>
 		<div>	Lag {props.Teamnumber}</div>
@@ -170,7 +150,7 @@ class Draft extends React.Component<any, DraftState> {
 	handleChangeTeamName(e: any) {
 		let teams = this.state.teams.slice();
 
-		teams[e.target.id.split(',')[1]] = e.target.value;
+		teams[e.target.id.split(',')[1]].TeamName = e.target.value;
 		this.setState({
 			teams:teams
 		});
@@ -1199,8 +1179,6 @@ interface AllPlayersInterface {
 
 class AllPlayers extends React.Component<AllPlayersInterface, any> {
 	render() {
-		if (this.props.Players != null && this.props.Players[0]!=null) {
-		}
 		return (
 			<ul>
 				{
