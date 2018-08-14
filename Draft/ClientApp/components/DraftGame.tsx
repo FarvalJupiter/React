@@ -22,7 +22,8 @@ interface DraftState {
 	keepers: string[];
 	DefaultRanking: Player[];
 	SelectableRules: string[];
-	options:string[];
+	options: string[];
+	filteroption: string[];
 
 
 }
@@ -146,7 +147,8 @@ class Draft extends React.Component<any, DraftState> {
 				'RB-WR WR-tung|Min|QB:1,RB:4,WR:5,TE:1,K:1,DST:1|Max|QB:2,RB:6,WR:8,TE:2,K:1,DST:1',
 				'RB-WR balanserad|Min|QB:1,RB:5,WR:5,TE:1,K:1,DST:1|Max|QB:2,RB:7,WR:7,TE:2,K:1,DST:1',
 			],
-			options:[],
+			options: [],
+			filteroption:[]
 		};
 
 	}
@@ -1012,18 +1014,92 @@ class Draft extends React.Component<any, DraftState> {
 
 
 	filterList(event: any) {
-		console.log(event.target.checked)
-		console.log(event.target.value)
-		let updatedList = this.state.teams[this.state.draftnumber - 1] != null ? this.state.teams[this.state.draftnumber - 1].Ranking.map((r) => { return (r.name + ' ' + r.position + ' ' + r.team) }) : [];
+		let filteroptions = this.state.filteroption.slice();
+		console.log(filteroptions.length)
 		if (event.target.checked) {
-			console.log('searc')
-			updatedList = updatedList.filter(function(item) {
+			filteroptions.push(event.target.value)
+		} else {
+			for (let i = 0; i < filteroptions.length; i++) {
+				if (filteroptions[i] == event.target.value) {
+					filteroptions.splice(i, 1);
+				}
+			}
+		}
+		console.log(filteroptions.length)
+
+		let completelist = this.state.teams[this.state.draftnumber - 1] != null ? this.state.teams[this.state.draftnumber - 1].Ranking.map((r) => { return (r.number+':'+r.name + ' ' + r.position + ' ' + r.team) }) : [];
+		let updatedList = completelist;
+		//for (let i = 0; i < filteroptions.length; i++) {
+		//		let list = completelist.filter(function (item) {
+		//			return item.toLowerCase().search(
+		//					filteroptions[i].toLowerCase() ||filteroptions[i+1].toLowerCase()) !==
+		//				-1;
+		//	});
+		//	updatedList=updatedList.concat(list)
+		//}
+		console.log(filteroptions[0])
+		if (filteroptions.length == 2) {
+			updatedList = completelist.filter(function(item) {
 				return item.toLowerCase().search(
-						event.target.value.toLowerCase()) !==
+						filteroptions[0].toLowerCase()) !==
+					-1 ||
+					item.toLowerCase().search(filteroptions[1].toLowerCase()) !== -1;
+			});
+		} else if (filteroptions.length == 1) {
+			updatedList = completelist.filter(function (item) {
+				return item.toLowerCase().search(
+						filteroptions[0].toLowerCase()) !==
 					-1;
 			});
 		}
-		this.setState({ options: updatedList });
+		else if (filteroptions.length == 3) {
+			updatedList = completelist.filter(function (item) {
+				return item.toLowerCase().search(
+						filteroptions[0].toLowerCase()) !==
+					-1 ||
+					item.toLowerCase().search(filteroptions[1].toLowerCase()) !== -1 ||
+					item.toLowerCase().search(filteroptions[2].toLowerCase()) !== -1
+			});
+		}
+		else if (filteroptions.length == 4) {
+			updatedList = completelist.filter(function (item) {
+				return item.toLowerCase().search(
+						filteroptions[0].toLowerCase()) !==
+					-1 ||
+					item.toLowerCase().search(filteroptions[1].toLowerCase()) !== -1 ||
+					item.toLowerCase().search(filteroptions[2].toLowerCase()) !== -1 ||
+					item.toLowerCase().search(filteroptions[3].toLowerCase()) !== -1
+			});
+		}
+		else if (filteroptions.length == 5) {
+			updatedList = completelist.filter(function (item) {
+				return item.toLowerCase().search(
+						filteroptions[0].toLowerCase()) !==
+					-1 ||
+					item.toLowerCase().search(filteroptions[1].toLowerCase()) !== -1 ||
+					item.toLowerCase().search(filteroptions[2].toLowerCase()) !== -1 ||
+					item.toLowerCase().search(filteroptions[3].toLowerCase()) !== -1 ||
+					item.toLowerCase().search(filteroptions[4].toLowerCase()) !== -1
+			});
+		}
+		else if (filteroptions.length == 6) {
+			updatedList = completelist.filter(function (item) {
+				return item.toLowerCase().search(
+						filteroptions[0].toLowerCase()) !==
+					-1 ||
+					item.toLowerCase().search(filteroptions[1].toLowerCase()) !== -1 ||
+					item.toLowerCase().search(filteroptions[2].toLowerCase()) !== -1 ||
+					item.toLowerCase().search(filteroptions[3].toLowerCase()) !== -1 ||
+					item.toLowerCase().search(filteroptions[4].toLowerCase()) !== -1 ||
+					item.toLowerCase().search(filteroptions[5].toLowerCase()) !== -1
+			});
+		}
+
+
+		this.setState({
+			options: updatedList,
+			filteroption: filteroptions
+		});
 	}
 
 
