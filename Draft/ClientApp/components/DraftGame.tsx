@@ -1027,7 +1027,7 @@ class Draft extends React.Component<any, DraftState> {
 		}
 		console.log(filteroptions.length)
 
-		let completelist = this.state.teams[this.state.draftnumber - 1] != null ? this.state.teams[this.state.draftnumber - 1].Ranking.map((r) => { return (r.number+':'+r.name + ' ' + r.position + ' ' + r.team) }) : [];
+		let completelist = this.state.teams[this.state.draftnumber - 1] != null ? this.state.teams[this.state.draftnumber - 1].Ranking.map((r) => { return (r.name + ' ' + r.position + ' ' + r.team) }) : [];
 		let updatedList = completelist;
 		//for (let i = 0; i < filteroptions.length; i++) {
 		//		let list = completelist.filter(function (item) {
@@ -1178,30 +1178,6 @@ class Draft extends React.Component<any, DraftState> {
 }
 
 
-//					<input type="text" placeholder="Search" onChange={this.filterList} />
-
-
-
-//<form onSubmit={this.handleSubmitPlayer}>
-//	<label htmlFor="new-todo">
-//		Vilken spelar väljer du?
-//	</label>
-//	<input
-//		id="new-todo"
-
-//		onChange={this.handleChangePlayer}
-
-//		value={this.state.selectplayer}
-
-//	/>
-
-//	<button>
-
-//		Lägg till spelare #{this.state.selectedPlayers.length + 1}
-
-//	</button>
-
-//</form>
 
 
 export class DraftGame extends React.Component<RouteComponentProps<{}>, GameState> {
@@ -1238,46 +1214,5 @@ class AllPlayers extends React.Component<AllPlayersInterface, any> {
 }
 
 
-//{
-//	this.props.Players.map(item => (
-//		<li key={item.number}>{item.name}</li>
-//	))
-//}
-
-//const ImportFromFileBodyComponent = (rank:string) => {
-
-//	let fileReader:any;
-
-//	const handleFileRead = (e: any) => {
-//		fileReader = new FileReader();
-
-//		const content = fileReader.result;
-//		console.log(content);
-//		rank = content;
-//		// … do something with the 'content' …
-//	};
-
-//	const handleFileChosen = (file:any) => {
-//		fileReader = new FileReader();
-//		//console.log(fileReader.result);
-
-//		fileReader.onloadend = handleFileRead;
-//		fileReader.readAsText(file);
-//	};
-
-	
-//		return <div className='upload-expense'>
-//			       <input type='file'
-//			              id='file'
-//			              className='input-file'
-//			              accept='.csv'
-//			              onChange={(e: React.ChangeEvent<HTMLInputElement>) => e != null && e.target != null && e.target.files != null
-//						? handleFileChosen(e.target.files[0])
-//						: alert("null")}
-//			              //onChange={handleChange.bind(this:any)}
-///>
-//		       </div>;
-	
-//};
 
 
