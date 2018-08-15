@@ -18,8 +18,6 @@ interface DraftState {
 	teams: TeamState[];
 	selectedPlayers: string[];
     selectplayer: string;
-    trades: string[];
-	keepers: string[];
 	DefaultRanking: Player[];
 	SelectableRules: string[];
 	options: string[];
@@ -104,11 +102,7 @@ class Draft extends React.Component<any, DraftState> {
 		this.handleSubmit = this.handleSubmit.bind(this);
 		this.handleChangePlayer = this.handleChangePlayer.bind(this);
         this.handleSubmitPlayer = this.handleSubmitPlayer.bind(this);
-        this.openPopupbox = this.openPopupbox.bind(this);
-        this.updatetrade = this.updatetrade.bind(this);
-		this.updatekeeper = this.updatekeeper.bind(this);
 		this.updateRules = this.updateRules.bind(this);
-		this.savetrade = this.savetrade.bind(this);
 		this.filterList = this.filterList.bind(this);
 		this.state = {
 			Rounds: allrounds,
@@ -118,8 +112,6 @@ class Draft extends React.Component<any, DraftState> {
 			teams: teamstemp,
 			selectedPlayers: [],
             selectplayer: '',
-            trades: [],
-			keepers: [],
 			DefaultRanking: new Array<Player>(),
 			SelectableRules:[
 				'Default|Min|QB:1,RB:2,WR:2,TE:1,K:1,DST:1|Max|QB:3,RB:6,WR:6,TE:3,K:2,DST:2',
@@ -141,8 +133,6 @@ class Draft extends React.Component<any, DraftState> {
 			teams: this.state.teams,
 			selectplayer: this.state.selectplayer,
 			selectedPlayers: this.state.selectedPlayers,
-			trades: this.state.trades,
-			keepers: this.state.keepers,
 			options: this.state.teams[e.target.value - 1] != null ? this.state.teams[e.target.value - 1].Ranking.map((r) => { return (r.name + ' ' + r.position + ' ' + r.team) }) : []
 		});
 	}
@@ -189,8 +179,6 @@ class Draft extends React.Component<any, DraftState> {
 				teams: this.state.teams,
 				selectplayer: this.state.selectplayer,
 				selectedPlayers: this.state.selectedPlayers,
-				trades: this.state.trades,
-				keepers: this.state.keepers
 			});
 			if (breakit) {
 				break;
@@ -225,8 +213,6 @@ class Draft extends React.Component<any, DraftState> {
 			teams: teams,
 			selectplayer: this.state.selectplayer,
 			selectedPlayers: this.state.selectedPlayers,
-			trades: this.state.trades,
-			keepers: this.state.keepers,
 			options: this.state.teams[this.state.draftnumber - 1] != null ? this.state.teams[this.state.draftnumber - 1].Ranking.map((r) => { return (r.name + ' ' + r.position + ' ' + r.team) }) : []
 			
 		});
@@ -539,8 +525,6 @@ class Draft extends React.Component<any, DraftState> {
 			teams: teams,
 			selectplayer: this.state.selectplayer,
 			selectedPlayers: this.state.selectedPlayers,
-			trades: this.state.trades,
-			keepers: this.state.keepers,
 			options: this.state.teams[this.state.draftnumber - 1] != null ? this.state.teams[this.state.draftnumber - 1].Ranking.map((r) => { return (r.name + ' ' + r.position + ' ' + r.team) }) : []
 
 		});
@@ -556,8 +540,6 @@ class Draft extends React.Component<any, DraftState> {
 			teams: this.state.teams,
 			selectplayer: e.target.value,
 			selectedPlayers: this.state.selectedPlayers,
-			trades: this.state.trades,
-			keepers: this.state.keepers
 		});
 	}
 
@@ -588,8 +570,6 @@ class Draft extends React.Component<any, DraftState> {
 			teams: this.state.teams,
 			selectplayer: '',
 			selectedPlayers: this.state.selectedPlayers,
-			trades: this.state.trades,
-			keepers: this.state.keepers
 		});
 
 		for (let y = 0; y < rounds.length; y) {
@@ -622,8 +602,6 @@ class Draft extends React.Component<any, DraftState> {
 				teams: this.state.teams,
 				selectplayer: '',
 				selectedPlayers: this.state.selectedPlayers,
-				trades: this.state.trades,
-				keepers: this.state.keepers
 			});
 			if (breakit) {
 				break;
@@ -646,12 +624,12 @@ class Draft extends React.Component<any, DraftState> {
 				content = content.substring(("Rank,Namn,Position,Lag/n").length, content.length);
 			}
 			let players: Player[]= new Array<Player>();
-			for (var i = 0; i < content.split('\n').length; i++) {
+			for (var i = 0; i < content.split('\r\n').length; i++) {
 				let player: Player = {
-					number : content.split('\n')[i].split(',')[0],
-					name: content.split('\n')[i].split(',')[1],
-					position: content.split('\n')[i].split(',')[2],
-					team: content.split('\n')[i].split(',')[3],
+					number : content.split('\r\n')[i].split(',')[0],
+					name: content.split('\r\n')[i].split(',')[1],
+					position: content.split('\r\n')[i].split(',')[2],
+					team: content.split('\r\n')[i].split(',')[3],
 				}
 				players.push(player);
 			}
@@ -665,8 +643,6 @@ class Draft extends React.Component<any, DraftState> {
 				draftnumber: this.state.draftnumber,
 				selectplayer: this.state.selectplayer,
 				selectedPlayers: this.state.selectedPlayers,
-				trades: this.state.trades,
-				keepers: this.state.keepers
 			});
 		};
 		fileReader.readAsText(file);
@@ -685,17 +661,17 @@ class Draft extends React.Component<any, DraftState> {
 			}
 			let minrules = '';
 			let maxrules = '';
-			for (var i = 0; i < content.split('\n').length; i++) {
+			for (var i = 0; i < content.split('\r\n').length; i++) {
 
-				if (content.split('\n')[i].split(',')[0] == 'QB' ||
-					content.split('\n')[i].split(',')[0] == 'RB' ||
-					content.split('\n')[i].split(',')[0] == 'WR' ||
-					content.split('\n')[i].split(',')[0] == 'TE' ||
-					content.split('\n')[i].split(',')[0] == 'K' ||
-					content.split('\n')[i].split(',')[0] == 'DST') {
+				if (content.split('\r\n')[i].split(',')[0] == 'QB' ||
+					content.split('\r\n')[i].split(',')[0] == 'RB' ||
+					content.split('\r\n')[i].split(',')[0] == 'WR' ||
+					content.split('\r\n')[i].split(',')[0] == 'TE' ||
+					content.split('\r\n')[i].split(',')[0] == 'K' ||
+					content.split('\r\n')[i].split(',')[0] == 'DST') {
 
-					minrules=minrules.concat(content.split('\n')[i].split(',')[0] + ':' + content.split('\n')[i].split(',')[1] + ',')
-					maxrules=maxrules.concat(content.split('\n')[i].split(',')[0] + ':' + content.split('\n')[i].split(',')[2] + ',')
+					minrules=minrules.concat(content.split('\r\n')[i].split(',')[0] + ':' + content.split('\r\n')[i].split(',')[1] + ',')
+					maxrules=maxrules.concat(content.split('\r\n')[i].split(',')[0] + ':' + content.split('\r\n')[i].split(',')[2] + ',')
 				}
 			}
 			teams[teamnumber - 1].MinRules = minrules.substring(0, minrules.length-1);
@@ -707,8 +683,6 @@ class Draft extends React.Component<any, DraftState> {
 				draftnumber: this.state.draftnumber,
 				selectplayer: this.state.selectplayer,
 				selectedPlayers: this.state.selectedPlayers,
-				trades: this.state.trades,
-				keepers: this.state.keepers
 			});
 		};
 		fileReader.readAsText(file);
@@ -725,12 +699,12 @@ class Draft extends React.Component<any, DraftState> {
 				content = content.substring(("Rank,Namn,Position,Lag/n").length, content.length);
 			}
 			let players: Player[] = new Array<Player>();
-			for (var i = 0; i < content.split('\n').length; i++) {
+			for (var i = 0; i < content.split('\r\n').length; i++) {
 				let player: Player = {
-					number: content.split('\n')[i].split(',')[0],
-					name: content.split('\n')[i].split(',')[1],
-					position: content.split('\n')[i].split(',')[2],
-					team: content.split('\n')[i].split(',')[3],
+					number: content.split('\r\n')[i].split(',')[0],
+					name: content.split('\r\n')[i].split(',')[1],
+					position: content.split('\r\n')[i].split(',')[2],
+					team: content.split('\r\n')[i].split(',')[3],
 				}
 				players.push(player);
 			}
@@ -750,8 +724,6 @@ class Draft extends React.Component<any, DraftState> {
 				draftnumber: this.state.draftnumber,
 				selectplayer: this.state.selectplayer,
 				selectedPlayers: this.state.selectedPlayers,
-				trades: this.state.trades,
-				keepers: this.state.keepers,
 				DefaultRanking: players
 			});
 		};
@@ -759,6 +731,100 @@ class Draft extends React.Component<any, DraftState> {
 
 
 	};
+
+	
+
+
+	private handleFileTradeKeeper = (file: any) => {
+		let fileReader = new FileReader();
+		fileReader.onloadend = (e) => {
+			let teams = this.state.teams.slice();
+			let rounds = this.state.Rounds.slice();
+			let content = fileReader.result;
+
+			if (content.startsWith("Runda:,Pick ,Ny ägare,Keeper,,")) {
+
+				content = content.substring(("Runda:,Pick ,Ny ägare,Keeper,,/n").length, content.length);
+			}
+			let players: Player[] = new Array<Player>();
+			for (var i = 0; i < content.split('\r\n').length; i++) {
+				let round = content.split('\r\n')[i].split(',')[0];
+				let pick = content.split('\r\n')[i].split(',')[1];
+				let newowner = content.split('\r\n')[i].split(',')[2];
+				let keepplayer = content.split('\r\n')[i].split(',')[3];
+				let keepposition = content.split('\r\n')[i].split(',')[4];
+				let keepteam = content.split('\r\n')[i].split(',')[5];
+				console.log(newowner.length);
+				console.log(keepplayer);
+				console.log(keepposition);
+				console.log(keepteam);
+				if (newowner.length != 0) {
+					console.log('ny ägare')
+					rounds[parseInt(round)][parseInt(pick)] = newowner;
+				}
+				else if (keepplayer.length != 0) {
+					console.log('keep')
+					let player: Player = { name: '', number: 0, position: '', team: '' };
+					let teamnumber = rounds[parseInt(round)-1][parseInt(pick)-1];
+					for (let u = 0; u < teams[teamnumber - 1].Ranking.length; u++) {
+						if (u == 116 ||u==115) {
+							console.log('"' + teams[teamnumber - 1].Ranking[u].team + '"' + teams[teamnumber - 1].Ranking[116].team.length)
+							console.log('"'+keepteam+'"'+keepteam.length)
+							console.log(teams[teamnumber - 1].Ranking[u].name == keepplayer)
+							console.log(teams[teamnumber - 1].Ranking[u].position == keepposition)
+							console.log(teams[teamnumber - 1].Ranking[u].team === keepteam)
+						}
+						if (teams[teamnumber - 1].Ranking[u].name == keepplayer && teams[teamnumber - 1].Ranking[u].position == keepposition && teams[teamnumber - 1].Ranking[u].team == keepteam) {
+							player = teams[teamnumber - 1].Ranking[u];
+						}
+					}
+					console.log(player)
+					teams[teamnumber - 1].SelectedPlayers.push(player)
+
+					if (this.state.draftnumber > 0) {
+						let ranking = teams[this.state.draftnumber - 1].Ranking.slice();
+
+						let count = 0;
+						while (true) {
+							if (teams[this.state.draftnumber - 1].Ranking[count].name === player.name && teams[this.state.draftnumber - 1].Ranking[count].position === player.position && teams[this.state.draftnumber - 1].Ranking[count].team === player.team) {
+								break;
+							} else {
+								count++;
+							}
+						}
+						ranking.splice(count, 1);
+						teams[this.state.draftnumber - 1].Ranking = ranking;
+					}
+					rounds[parseInt(round)-1][parseInt(pick)-1] = 0;
+
+				}
+			}
+
+
+			for (let y = 0; y < teams.length; y++) {
+				if (teams[y].Ranking.length == 0) {
+					teams[y].Ranking = players
+				}
+			}
+
+			this.setState({
+				Rounds: this.state.Rounds,
+				CurrentRound: this.state.CurrentRound,
+				teams: teams,
+				draftnumber: this.state.draftnumber,
+				selectplayer: this.state.selectplayer,
+				selectedPlayers: this.state.selectedPlayers,
+				DefaultRanking: players,
+				options: this.state.teams[this.state.draftnumber - 1] != null ? this.state.teams[this.state.draftnumber - 1].Ranking.map((r) => { return (r.name + ' ' + r.position + ' ' + r.team) }) : []
+				
+			});
+		};
+		fileReader.readAsText(file);
+
+
+	};
+
+
 	
 	renderTeam(i: any) {
 		let optionsrules = this.state.SelectableRules.map((r) => {
@@ -819,155 +885,9 @@ class Draft extends React.Component<any, DraftState> {
 		return table;
 	}
 
-    openPopupbox() {
 
-        let children = [];
-        let content = [];
-
-        for (let i = 0; i < this.state.Rounds.length; i++) {
-			children.push(<h2 key={'runda' + i.toString()}>Runda {i + 1}</h2>)
-
-            for (let y = 0; y < this.state.Rounds[i].length; y++) {
-                const options = this.state.teams[this.state.draftnumber - 1] != null ? this.state.teams[this.state.draftnumber - 1].Ranking.map((r) => { return { label: (r.name + ' ' + r.position + ' ' + r.team), value: (r.name + ' ' + r.position + ' ' + r.team+':'+ i.toString() + ',' + y.toString() + ';' + this.state.Rounds[i][y].toString() ) } }) : [];
-				const optionsTeam = this.state.teams.map((r) => { return { label: (r.TeamName), value: (r.TeamName + ':' + i.toString() + ',' + y.toString()) } });
-
-                //    content.push(
-                //        <div key={i.toString() + y.toString()}>
-                //    {this.state.Rounds[i][y]}
-                //</div>);
-
-	        //    <input id={i.toString() + ',' + y.toString() + ';' + this.state.Rounds[i][y].toString()} key={i.toString() + y.toString()} type="text" className="mm-popup__input" defaultValue={this.state.Rounds[i][y].toString()} onChange={this.updatetrade} />
-
-                children.push(
-                    <div key={i.toString() + y.toString()}>
-						<label htmlFor={i.toString() + ',' + y.toString()}>Pick {y + 1} </label>
-	                    <section id={i.toString() + ',' + y.toString() + ';' + this.state.Rounds[i][y].toString()}>
-		                    <Dropdown
-			                    options={optionsTeam}
-								onChange={this.updatetrade}
-								value={optionsTeam[this.state.Rounds[i][y]-1]}
-			                     />
-
-	                    </section>
-                        <section id={i.toString() + ',' + y.toString() + ';' + this.state.Rounds[i][y].toString()}>
-                            <Dropdown
-                                options={options}
-                                onChange={this.updatekeeper}
-                                placeholder="Välj spelare att behålla" />
-
-                        </section>
-                    </div>
-                );
-            }
-        }
-        content.push(<form onSubmit={this.savetrade}><button type="submit">Spara</button>{children}</form>);
-        //let content = (
-        //    <div>
-        //        {this.state.Rounds[0][0]}
-        //    </div>
-        
-        //)
-
-        PopupboxManager.open({ content })
-    }
-
-
-    updatekeeper(option: any) {
-        console.log(option)
-        if (!option.value.length) {
-            return;
-        }
-        let allkeepers = this.state.keepers.slice();
-        let allreadyexist = false;
-        for (let i = 0; i < this.state.keepers.length; i++) {
-            console.log(allkeepers[i].split(':')[0])
-
-            if (allkeepers[i].split(':')[1] == option.value.split(':')[1]) {
-                allkeepers[i] = option.value;
-                allreadyexist = true;
-            }
-        }
-        if (!allreadyexist) {
-            allkeepers.push(option.value)
-        }
-        console.log(option.value)
-        console.log(allkeepers);
-        this.setState({ keepers: allkeepers });
-    }
-
-    updatetrade(option: any) {
-        let alltrades = this.state.trades.slice();
-        let allreadyexist = false;
-        for (let i = 0; i < this.state.trades.length; i++) {
-            console.log(alltrades[i].split(':')[0])
-
-			if (alltrades[i].split(':')[1] == option.value.split(':')[1]) {
-                alltrades[i] = option.value;
-                allreadyexist = true;
-            }
-        }
-        if (!allreadyexist) {
-            alltrades.push(option.value)
-        }
-        console.log(alltrades);
-        this.setState({ trades: alltrades });
-    }
-
-    savetrade(e: any) {
-        e.preventDefault()
-        let teams = this.state.teams.slice();
-        let rounds = this.state.Rounds.slice();
-
-		for (let i = 0; i < this.state.trades.length; i++) {
-		    let teamnumber = 0;
-			for (let y = 0; y < this.state.teams.length; y++) {
-				if (this.state.teams[y].TeamName == this.state.trades[i].split(':')[0]) {
-					teamnumber = y+1;
-				}
-			}
-	    rounds[parseInt(this.state.trades[i].split(':')[1].split(',')[0])][parseInt(
-		    this.state.trades[i].split(':')[1].split(',')[1])] = teamnumber;
-	    //parseInt(this.state.trades[i].split(':')[1])
-    }
-        for (let i = 0; i < this.state.keepers.length; i++) {
-            let player: Player = { name: '', number: 0, position: '', team: '' };
-
-            for (let u = 0; u < teams[parseInt(this.state.keepers[i].split(':')[1].split(';')[1]) - 1].Ranking.length; u++) {
-                if (teams[parseInt(this.state.keepers[i].split(':')[1].split(';')[1]) - 1].Ranking[u].name + ' '+teams[parseInt(this.state.keepers[i].split(':')[1].split(';')[1]) - 1].Ranking[u].position + ' '+teams[parseInt(this.state.keepers[i].split(':')[1].split(';')[1]) - 1].Ranking[u].team == this.state.keepers[i].split(':')[0]) {
-                    player = teams[parseInt(this.state.keepers[i].split(':')[1].split(';')[1]) - 1].Ranking[u];
-                }
-            }
-            teams[parseInt(this.state.keepers[i].split(':')[1].split(';')[1]) - 1].SelectedPlayers.push(player)
-
-            if (this.state.draftnumber > 0) {
-                let ranking = teams[this.state.draftnumber - 1].Ranking.slice();
-
-                let count = 0;
-                while (true) {
-                    if (teams[this.state.draftnumber - 1].Ranking[count].name === player.name && teams[this.state.draftnumber - 1].Ranking[count].position === player.position && teams[this.state.draftnumber - 1].Ranking[count].team === player.team) {
-                        break;
-                    } else {
-                        count++;
-                    }
-                }
-                ranking.splice(count, 1);
-                teams[this.state.draftnumber - 1].Ranking = ranking;
-            }
-
-   
-
-      
-            rounds[parseInt(this.state.keepers[i].split(':')[1].split(';')[0].split(',')[0])][parseInt(this.state.keepers[i].split(':')[1].split(';')[0].split(',')[1])] = 0;
-        }
-        this.setState({
-			teams: teams,
-			Rounds: rounds,
-			options: this.state.teams[this.state.draftnumber - 1] != null ? this.state.teams[this.state.draftnumber - 1].Ranking.map((r) => { return (r.name + ' ' + r.position + ' ' + r.team) }) : []
-
-        });
-
-
-	}
+	
+  
 
 
 
@@ -1113,11 +1033,17 @@ class Draft extends React.Component<any, DraftState> {
 						value={this.state.draftnumber}
 					/>
 				</form>
+				<label>Justera trades och keepers</label>
+				<input type='file'
+				       id='file'
+				       className='input-file'
+				       accept='.csv'
+				       onChange={(e: React.ChangeEvent<HTMLInputElement>) => e != null && e.target != null && e.target.files != null ? this.handleFileTradeKeeper(e.target.files[0]) : alert("null")}
+				/>
 				<div>Draftnummer {this.state.draftnumber}</div>
 				<form onSubmit={this.handleSubmit}>
 					<button id="draft-number" >Börja draft</button>
                 </form>
-                <button onClick={this.openPopupbox}>Justera trades och keepers</button>
                 <PopupboxContainer {...popupboxConfig}/>
                 <div>Rundnummer {this.state.CurrentRound}</div>
 			
