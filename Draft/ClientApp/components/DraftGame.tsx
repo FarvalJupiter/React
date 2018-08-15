@@ -754,26 +754,13 @@ class Draft extends React.Component<any, DraftState> {
 				let keepplayer = content.split('\r\n')[i].split(',')[3];
 				let keepposition = content.split('\r\n')[i].split(',')[4];
 				let keepteam = content.split('\r\n')[i].split(',')[5];
-				console.log(newowner.length);
-				console.log(keepplayer);
-				console.log(keepposition);
-				console.log(keepteam);
 				if (newowner.length != 0) {
-					console.log('ny ägare')
-					rounds[parseInt(round)][parseInt(pick)] = newowner;
+					rounds[parseInt(round)][parseInt(pick)] = parseInt(newowner);
 				}
 				else if (keepplayer.length != 0) {
-					console.log('keep')
 					let player: Player = { name: '', number: 0, position: '', team: '' };
 					let teamnumber = rounds[parseInt(round)-1][parseInt(pick)-1];
 					for (let u = 0; u < teams[teamnumber - 1].Ranking.length; u++) {
-						if (u == 116 ||u==115) {
-							console.log('"' + teams[teamnumber - 1].Ranking[u].team + '"' + teams[teamnumber - 1].Ranking[116].team.length)
-							console.log('"'+keepteam+'"'+keepteam.length)
-							console.log(teams[teamnumber - 1].Ranking[u].name == keepplayer)
-							console.log(teams[teamnumber - 1].Ranking[u].position == keepposition)
-							console.log(teams[teamnumber - 1].Ranking[u].team === keepteam)
-						}
 						if (teams[teamnumber - 1].Ranking[u].name == keepplayer && teams[teamnumber - 1].Ranking[u].position == keepposition && teams[teamnumber - 1].Ranking[u].team == keepteam) {
 							player = teams[teamnumber - 1].Ranking[u];
 						}
