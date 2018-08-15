@@ -755,7 +755,7 @@ class Draft extends React.Component<any, DraftState> {
 				let keepposition = content.split('\r\n')[i].split(',')[4];
 				let keepteam = content.split('\r\n')[i].split(',')[5];
 				if (newowner.length != 0) {
-					rounds[parseInt(round)][parseInt(pick)] = parseInt(newowner);
+					rounds[parseInt(round)-1][parseInt(pick)-1] = parseInt(newowner);
 				}
 				else if (keepplayer.length != 0) {
 					let player: Player = { name: '', number: 0, position: '', team: '' };
