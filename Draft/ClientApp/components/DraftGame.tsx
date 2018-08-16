@@ -22,6 +22,8 @@ interface DraftState {
 	SelectableRules: string[];
 	options: string[];
 	filteroption: string[];
+	numberofplayers: number;
+	numberofrounds: number;
 
 
 }
@@ -63,8 +65,10 @@ function Team(props: any) {
 class Draft extends React.Component<any, DraftState> {
 	constructor(props: any) {
 		super(props);
+		let defaultnumberofplayers = 10;
+		let defaultnumberofrounds = 16;
 		let teamstemp: TeamState[] = new Array<TeamState>();
-		for (var i = 1; i < 11; i++) {
+		for (var i = 1; i < defaultnumberofplayers+1; i++) {
 			const team: TeamState =
 			{
 				Ranking: new Array<Player>(),
@@ -79,18 +83,15 @@ class Draft extends React.Component<any, DraftState> {
 			teamstemp.push(team);
 		}
 		let allrounds: number[][] = new Array<number[]>();
-		//TODO: ändra till 17 4
-		for (let i = 1; i < 17; i++) {
+		for (let i = 1; i < defaultnumberofrounds +1; i++) {
 			let round : number[]= new Array<number>();
 			if (i % 2 === 1) {
-				//TODO ändra till 11 3
-				for (let team = 1; team <11; team++) {
+				for (let team = 1; team < defaultnumberofplayers+1; team++) {
 					round.push(team);
 				}
 			}
 			else {
-				//TODO: ändra till 10 2
-				for (let team = 10; team > 0; team--) {
+				for (let team = defaultnumberofplayers; team > 0; team--) {
 					round.push(team);
 				}
 			}
@@ -98,6 +99,8 @@ class Draft extends React.Component<any, DraftState> {
 		}
 
 		this.handleChange = this.handleChange.bind(this);
+		this.handleChangeNumberOfPlayers = this.handleChangeNumberOfPlayers.bind(this);
+		this.handleChangeNumberOfRounds = this.handleChangeNumberOfRounds.bind(this);
 		this.handleChangeTeamName = this.handleChangeTeamName.bind(this);
 		this.handleSubmit = this.handleSubmit.bind(this);
 		this.handleChangePlayer = this.handleChangePlayer.bind(this);
@@ -120,7 +123,9 @@ class Draft extends React.Component<any, DraftState> {
 				'RB-WR balanserad|Min|QB:1,RB:5,WR:5,TE:1,K:1,DST:1|Max|QB:2,RB:7,WR:7,TE:2,K:1,DST:1',
 			],
 			options: [],
-			filteroption:[]
+			filteroption: [],
+			numberofplayers: defaultnumberofplayers,
+			numberofrounds: defaultnumberofrounds,
 		};
 
 	}
@@ -135,6 +140,104 @@ class Draft extends React.Component<any, DraftState> {
 			selectedPlayers: this.state.selectedPlayers,
 			options: this.state.teams[e.target.value - 1] != null ? this.state.teams[e.target.value - 1].Ranking.map((r) => { return (r.name + ' ' + r.position + ' ' + r.team) }) : []
 		});
+	}
+
+	handleChangeNumberOfPlayers(e: any) {
+		if (e.target.value > 0) {
+			let teams = this.state.teams.slice();
+			let teamstemp: TeamState[] = new Array<TeamState>();
+			for (var i = 1; i < parseInt(e.target.value) + 1; i++) {
+				//let team = teams[0];
+				//team.TeamName = "Lag " + i;
+				//team.Teamnumber = i;
+				const team: TeamState =
+				{
+					Ranking: new Array<Player>(),
+					SelectedPlayers: new Array<Player>(),
+					Teamnumber: i,
+					MinRulesFullfilled: false,
+					TeamName: 'Lag' + i,
+					MinRules: 'QB:1,RB:2,WR:2,TE:1,K:1,DST:1',
+					MaxRules: 'QB:3,RB:6,WR:6,TE:3,K:2,DST:2',
+					SelectedRule: 'Default'
+				};
+				teamstemp.push(team);
+			}
+			let allrounds: number[][] = new Array<number[]>();
+			for (let i = 1; i < this.state.numberofrounds + 1; i++) {
+				let round: number[] = new Array<number>();
+				if (i % 2 === 1) {
+					for (let team = 1; team < parseInt(e.target.value) + 1; team++) {
+						round.push(team);
+					}
+				} else {
+					for (let team = parseInt(e.target.value); team > 0; team--) {
+						round.push(team);
+					}
+				}
+				allrounds.push(round);
+			}
+
+			this.setState({
+				teams: teamstemp,
+				Rounds: allrounds,
+				numberofplayers: parseInt(e.target.value)
+			});
+		} else {
+			this.setState({
+				numberofplayers: e.target.value
+			});
+		}
+	}
+
+	handleChangeNumberOfRounds(e: any) {
+		if (e.target.value > 0) {
+
+			let teams = this.state.teams.slice();
+
+			let teamstemp: TeamState[] = new Array<TeamState>();
+			for (var i = 1; i < this.state.numberofplayers + 1; i++) {
+				//let team = teams[0];
+				//team.TeamName = "Lag " + i;
+				//team.Teamnumber = i;
+				const team: TeamState =
+				{
+					Ranking: new Array<Player>(),
+					SelectedPlayers: new Array<Player>(),
+					Teamnumber: i,
+					MinRulesFullfilled: false,
+					TeamName: 'Lag' + i,
+					MinRules: 'QB:1,RB:2,WR:2,TE:1,K:1,DST:1',
+					MaxRules: 'QB:3,RB:6,WR:6,TE:3,K:2,DST:2',
+					SelectedRule: 'Default'
+				};
+				teamstemp.push(team);
+			}
+			let allrounds: number[][] = new Array<number[]>();
+			for (let i = 1; i < parseInt(e.target.value) + 1; i++) {
+				let round: number[] = new Array<number>();
+				if (i % 2 === 1) {
+					for (let team = 1; team < this.state.numberofplayers + 1; team++) {
+						round.push(team);
+					}
+				} else {
+					for (let team = this.state.numberofplayers; team > 0; team--) {
+						round.push(team);
+					}
+				}
+				allrounds.push(round);
+			}
+
+			this.setState({
+				teams: teamstemp,
+				Rounds: allrounds,
+				numberofrounds: parseInt(e.target.value)
+			});
+		} else {
+			this.setState({
+				numberofrounds: e.target.value
+			});
+		}
 	}
 
 	handleChangeTeamName(e: any) {
@@ -287,8 +390,8 @@ class Draft extends React.Component<any, DraftState> {
 			crb >= mrb &&
 			cwr >= mwr &&
 			cte >= mte &&
-            (currentRound >= 14 ? ck >= mk : true) &&
-            (currentRound >= 13 ? cdst >= mdst : true)) {
+            (currentRound >= this.state.numberofrounds-3 ? ck >= mk : true) &&
+			(currentRound >= this.state.numberofrounds - 3 ? cdst >= mdst : true)) {
             console.log('Runda ' + currentRound + 'spelare ' + teamnumber + ' minrulesfullfilled true. antal WR '+cwr+ ' antal rb '+crb);
 
 			minrulesfullfilled = true;
@@ -349,12 +452,12 @@ class Draft extends React.Component<any, DraftState> {
 	                selectedplayer = teams[teamnumber - 1].Ranking[playernumber];
 	                continue;
                 }
-                else if (selectedplayer.position == 'K' && (currentRound<14 || ck >= mk)) {
+				else if (selectedplayer.position == 'K' && (currentRound < this.state.numberofrounds - 3 || ck >= mk)) {
 	                playernumber++;
 	                selectedplayer = teams[teamnumber - 1].Ranking[playernumber];
 	                continue;
                 }
-                else if (selectedplayer.position == 'DST' && (currentRound<13 || cdst >= mdst)) {
+				else if (selectedplayer.position == 'DST' && (currentRound < this.state.numberofrounds - 3 || cdst >= mdst)) {
 	                playernumber++;
 	                selectedplayer = teams[teamnumber - 1].Ranking[playernumber];
 	                continue;
@@ -384,12 +487,12 @@ class Draft extends React.Component<any, DraftState> {
 			        selectedplayer = teams[teamnumber - 1].Ranking[playernumber];
 			        continue;
 		        }
-                else if (selectedplayer.position == 'K' && (currentRound<14 || ck >= xk)) {
+				else if (selectedplayer.position == 'K' && (currentRound < this.state.numberofrounds - 3 || ck >= xk)) {
 			        playernumber++;
 			        selectedplayer = teams[teamnumber - 1].Ranking[playernumber];
 			        continue;
 		        }
-                else if (selectedplayer.position == 'DST' && (currentRound<13 || cdst >= xdst)) {
+				else if (selectedplayer.position == 'DST' && (currentRound < this.state.numberofrounds - 3 || cdst >= xdst)) {
 			        playernumber++;
 			        selectedplayer = teams[teamnumber - 1].Ranking[playernumber];
 			        continue;
@@ -414,7 +517,7 @@ class Draft extends React.Component<any, DraftState> {
 					numbernotin++;
 				}
 			}
-			if (numbernotin < 10) {
+			if (numbernotin < this.state.numberofplayers) {
     //            const ranking = teams[teamnumber - 1].Ranking.slice();
 				//console.log('spelarnummer', playernumber);
 				//ranking.splice(playernumber, 1);
@@ -445,12 +548,12 @@ class Draft extends React.Component<any, DraftState> {
 							selectedplayer = teams[teamnumber - 1].Ranking[playernumber];
 							continue;
 						}
-                        else if (selectedplayer.position == 'K' && (currentRound < 14 || ck >= mk)) {
+						else if (selectedplayer.position == 'K' && (currentRound < this.state.numberofrounds - 3 || ck >= mk)) {
 							playernumber++;
 							selectedplayer = teams[teamnumber - 1].Ranking[playernumber];
 							continue;
 						}
-                        else if (selectedplayer.position == 'DST' && (currentRound < 13 || cdst >= mdst)) {
+						else if (selectedplayer.position == 'DST' && (currentRound < this.state.numberofrounds - 3 || cdst >= mdst)) {
 							playernumber++;
 							selectedplayer = teams[teamnumber - 1].Ranking[playernumber];
 							continue;
@@ -480,12 +583,12 @@ class Draft extends React.Component<any, DraftState> {
 							selectedplayer = teams[teamnumber - 1].Ranking[playernumber];
 							continue;
 						}
-                        else if (selectedplayer.position == 'K' && (currentRound < 14 || ck >= xk)) {
+						else if (selectedplayer.position == 'K' && (currentRound < this.state.numberofrounds - 3 || ck >= xk)) {
 							playernumber++;
 							selectedplayer = teams[teamnumber - 1].Ranking[playernumber];
 							continue;
 						}
-                        else if (selectedplayer.position == 'DST' && (currentRound < 13 || cdst >= xdst)) {
+						else if (selectedplayer.position == 'DST' && (currentRound < this.state.numberofrounds - 3 || cdst >= xdst)) {
 							playernumber++;
 							selectedplayer = teams[teamnumber - 1].Ranking[playernumber];
 							continue;
@@ -818,6 +921,8 @@ class Draft extends React.Component<any, DraftState> {
 			return { label: (r.split('|')[0]), value: (r.split('|')[0] + ':' + i.toString()) }
 		});
 		let id = 0;
+		console.log('teamnummer'+i);
+		console.log('antal team'+this.state.teams.length);
 		for (let y = 0; y < optionsrules.length; y++) {
 			if (this.state.teams[i - 1].SelectedRule == optionsrules[y].label) {
 				id = y;
@@ -865,8 +970,8 @@ class Draft extends React.Component<any, DraftState> {
 
 	CreateBoard = () => {
 		let table: any[] = [];
-		//TOOO ändra till 11
-		for (let i = 1; i < 11; i++) {
+
+		for (let i = 1; i < this.state.numberofplayers+1; i++) {
 			table.push(<div key={i} className="board-row">{this.renderTeam(i)}</div>);
 		}
 		return table;
@@ -1003,6 +1108,26 @@ class Draft extends React.Component<any, DraftState> {
 	    return (
 
 			<div>
+				<form>
+					<label htmlFor="number-of-players">
+						Hur många spelare är det?
+					</label>
+					<input
+						id="number-of-players"
+						onChange={this.handleChangeNumberOfPlayers}
+						value={this.state.numberofplayers}
+					/>
+				</form>
+				<form>
+					<label htmlFor="number-of-rounds">
+						Hur många rundor är det?
+					</label>
+					<input
+						id="number-of-rounds"
+						onChange={this.handleChangeNumberOfRounds}
+						value={this.state.numberofrounds}
+					/>
+				</form>
 				<label>Defaultranking</label>
 				<input type='file'
 				       id='file'
