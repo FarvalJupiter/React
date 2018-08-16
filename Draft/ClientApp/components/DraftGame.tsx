@@ -54,7 +54,7 @@ function Team(props: any) {
 
 		return (<div>
 		<div>	Lag {props.Teamnumber}</div>
-			Valda spelare <AllPlayers Players={props.SelectedPlayers} />		
+			Valda spelare ({props.SelectedPlayers.length}) <AllPlayers Players={props.SelectedPlayers} />		
 					
 	        </div>);
 	
@@ -254,13 +254,10 @@ class Draft extends React.Component<any, DraftState> {
 		const rounds = this.state.Rounds.slice();
 		let currentRound = this.state.CurrentRound;
 		for (let y = 0; y < rounds.length; y) {
-			console.log('Antal rundor' + rounds.length);
-			console.log('den här rundan'+rounds[0]);
 			let breakit = false;
 			let round = rounds[0].slice();
 
             for (let i = 0; i < round.length; i) {
-				console.log('vilket lags tur är det'+round[0]);
 				if (round[0] == this.state.draftnumber) {
 					breakit = true;
 					break;
@@ -297,8 +294,6 @@ class Draft extends React.Component<any, DraftState> {
 		let selectedplayer: Player = {name:'',number:0, position:'', team:''};
 		let count = 0;
 		while (selectedplayer.name === '') {
-			console.log(teams[this.state.draftnumber - 1].Ranking[0]);
-			console.log(selectplayer);
 			if (teams[this.state.draftnumber - 1].Ranking[count].name + ' ' + teams[this.state.draftnumber - 1].Ranking[count].position + ' ' + teams[this.state.draftnumber - 1].Ranking[count].team === selectplayer) {
 				selectedplayer = teams[this.state.draftnumber - 1].Ranking[count];
 			} else {
@@ -326,7 +321,6 @@ class Draft extends React.Component<any, DraftState> {
         if (teamnumber == 0) {
             return;
         }
-		console.log('vilket lag'+teamnumber);
         const teams = this.state.teams.slice();
         let minrulesfullfilled = teams[teamnumber - 1].MinRulesFullfilled;
 		let mqb = 0;
@@ -392,12 +386,10 @@ class Draft extends React.Component<any, DraftState> {
 			cte >= mte &&
             (currentRound >= this.state.numberofrounds-3 ? ck >= mk : true) &&
 			(currentRound >= this.state.numberofrounds - 3 ? cdst >= mdst : true)) {
-            console.log('Runda ' + currentRound + 'spelare ' + teamnumber + ' minrulesfullfilled true. antal WR '+cwr+ ' antal rb '+crb);
 
 			minrulesfullfilled = true;
 			teams[teamnumber - 1].MinRulesFullfilled = true;
         } else {
-            console.log('Runda ' + currentRound + 'spelare ' + teamnumber + ' minrulesfullfilled false. antal WR ' + cwr + ' antal rb ' + crb);
 			minrulesfullfilled = false;
 			teams[teamnumber - 1].MinRulesFullfilled = false;
 		}
@@ -427,7 +419,6 @@ class Draft extends React.Component<any, DraftState> {
         
 		let playernumber = 0;
 		let selectedplayer = teams[teamnumber - 1].Ranking[playernumber];
-     //   console.log('försök välja spelare' + selectedplayer.name);
 
         if (!minrulesfullfilled) {
 	        while (true) {
@@ -437,7 +428,6 @@ class Draft extends React.Component<any, DraftState> {
                     continue;
                 }
                 else if (selectedplayer.position == 'RB' && crb >= mrb) {
-			//		console.log('försöker välja rb'+selectedplayer.name+', öka teamnumber, crb '+crb+' mrb '+mrb);
 	                playernumber++;
 	                selectedplayer = teams[teamnumber - 1].Ranking[playernumber];
 	                continue;
@@ -472,7 +462,6 @@ class Draft extends React.Component<any, DraftState> {
 			        continue;
 		        }
 		        else if (selectedplayer.position == 'RB' && crb >= xrb) {
-			    //    console.log('försöker välja rb' + selectedplayer.name + ', öka teamnumber, crb ' + crb + ' mrb ' + mrb);
 			        playernumber++;
 			        selectedplayer = teams[teamnumber - 1].Ranking[playernumber];
 			        continue;
@@ -508,7 +497,6 @@ class Draft extends React.Component<any, DraftState> {
 				let teamHasPlayer = false;
                 for (let y = 0; y < teams[i].SelectedPlayers.length; y++) {
                     if (teams[i].SelectedPlayers[y].name === selectedplayer.name && teams[i].SelectedPlayers[y].position === selectedplayer.position && teams[i].SelectedPlayers[y].team === selectedplayer.team) {
-					//	console.log(selectedplayer.name + ' redan vald');
 						teamHasPlayer = true;
 						continue;
 					}
@@ -518,10 +506,6 @@ class Draft extends React.Component<any, DraftState> {
 				}
 			}
 			if (numbernotin < this.state.numberofplayers) {
-    //            const ranking = teams[teamnumber - 1].Ranking.slice();
-				//console.log('spelarnummer', playernumber);
-				//ranking.splice(playernumber, 1);
-				//teams[teamnumber - 1].Ranking = ranking;
 
 				playernumber++;
 				selectedplayer = teams[teamnumber - 1].Ranking[playernumber];
@@ -533,7 +517,6 @@ class Draft extends React.Component<any, DraftState> {
 							continue;
 						}
 						else if (selectedplayer.position == 'RB' && crb >= mrb) {
-						//	console.log('försöker välja rb' + selectedplayer.name + ', öka teamnumber, crb ' + crb + ' mrb ' + mrb);
 							playernumber++;
 							selectedplayer = teams[teamnumber - 1].Ranking[playernumber];
 							continue;
@@ -568,7 +551,6 @@ class Draft extends React.Component<any, DraftState> {
 							continue;
 						}
 						else if (selectedplayer.position == 'RB' && crb >= xrb) {
-					//		console.log('försöker välja rb' + selectedplayer.name + ', öka teamnumber, crb ' + crb + ' mrb ' + mrb);
 							playernumber++;
 							selectedplayer = teams[teamnumber - 1].Ranking[playernumber];
 							continue;
@@ -604,7 +586,6 @@ class Draft extends React.Component<any, DraftState> {
 
 		}
 
-        console.log('vald spelare' + selectedplayer.name);
         if (this.state.draftnumber > 0) {
             let ranking = teams[this.state.draftnumber - 1].Ranking.slice();
 
@@ -647,8 +628,6 @@ class Draft extends React.Component<any, DraftState> {
 	}
 
 	handleSubmitPlayer(option:any) {
-    //    e.preventDefault();
-		console.log(option);
 		let currentRound = this.state.CurrentRound;
 		if (!option.value.length) {
 			return;
@@ -677,11 +656,7 @@ class Draft extends React.Component<any, DraftState> {
 
 		for (let y = 0; y < rounds.length; y) {
 			let breakit = false;
-			//const rounds = this.state.Rounds.slice();
 			let round = rounds[0].slice();
-			console.log('runda'+y);
-			console.log('längd round'+round.length);
-			console.log('första round'+round[0]);
 			for (let i = 0; i < round.length; i) {
 				if (round[0] == this.state.draftnumber) {
 					breakit = true;
@@ -710,11 +685,6 @@ class Draft extends React.Component<any, DraftState> {
 				break;
 			}
 		}
-
-		//this.setState((prevState:any) => ({
-		//	selectedPlayers: prevState.selectedPlayers.concat(this.state.selectplayer),
-		//	selectplayer: ''
-		//}));
 	}
 
 	private handleFileChosen = (file: any, teamnumber: number) => {
@@ -868,7 +838,6 @@ class Draft extends React.Component<any, DraftState> {
 							player = teams[teamnumber - 1].Ranking[u];
 						}
 					}
-					console.log(player)
 					teams[teamnumber - 1].SelectedPlayers.push(player)
 
 					if (this.state.draftnumber > 0) {
@@ -921,8 +890,6 @@ class Draft extends React.Component<any, DraftState> {
 			return { label: (r.split('|')[0]), value: (r.split('|')[0] + ':' + i.toString()) }
 		});
 		let id = 0;
-		console.log('teamnummer'+i);
-		console.log('antal team'+this.state.teams.length);
 		for (let y = 0; y < optionsrules.length; y++) {
 			if (this.state.teams[i - 1].SelectedRule == optionsrules[y].label) {
 				id = y;
@@ -991,13 +958,9 @@ class Draft extends React.Component<any, DraftState> {
 				rules = this.state.SelectableRules[i];
 			}
 		}
-		console.log(parseInt(option.value.split(':')[1]))
 		teams[parseInt(option.value.split(':')[1])-1].MinRules = rules.split('|')[2];
 		teams[parseInt(option.value.split(':')[1]) - 1].MaxRules = rules.split('|')[4];
 		teams[parseInt(option.value.split(':')[1]) - 1].SelectedRule = option.label;
-		console.log(option.value);
-		console.log(teams[parseInt(option.value.split(':')[1]) - 1].MinRules);
-		console.log(teams[parseInt(option.value.split(':')[1]) - 1].MaxRules);
 		this.setState({
 			teams: teams,
 			SelectableRules: this.state.SelectableRules
@@ -1007,7 +970,6 @@ class Draft extends React.Component<any, DraftState> {
 
 	filterList(event: any) {
 		let filteroptions = this.state.filteroption.slice();
-		console.log(filteroptions.length)
 		if (event.target.checked) {
 			filteroptions.push(event.target.value)
 		} else {
@@ -1017,19 +979,9 @@ class Draft extends React.Component<any, DraftState> {
 				}
 			}
 		}
-		console.log(filteroptions.length)
 
 		let completelist = this.state.teams[this.state.draftnumber - 1] != null ? this.state.teams[this.state.draftnumber - 1].Ranking.map((r) => { return (r.name + ' ' + r.position + ' ' + r.team) }) : [];
 		let updatedList = completelist;
-		//for (let i = 0; i < filteroptions.length; i++) {
-		//		let list = completelist.filter(function (item) {
-		//			return item.toLowerCase().search(
-		//					filteroptions[i].toLowerCase() ||filteroptions[i+1].toLowerCase()) !==
-		//				-1;
-		//	});
-		//	updatedList=updatedList.concat(list)
-		//}
-		console.log(filteroptions[0])
 		if (filteroptions.length == 2) {
 			updatedList = completelist.filter(function(item) {
 				return item.toLowerCase().search(
@@ -1104,7 +1056,6 @@ class Draft extends React.Component<any, DraftState> {
             fadeIn: true,
             fadeInSpeed: 500
         }
-	//	const options = this.state.teams[this.state.draftnumber - 1] !=null ? this.state.teams[this.state.draftnumber - 1].Ranking.map((r) => {return (r.name+ ' '+r.position+' '+r.team)}): [];
 	    return (
 
 			<div>
